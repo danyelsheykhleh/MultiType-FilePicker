@@ -92,21 +92,28 @@ public class AudioPickAdapter extends BaseAdapter<AudioFile, AudioPickAdapter.Au
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                Uri uri;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    File f = new File(file.getPath());
-                    uri = FileProvider.getUriForFile(mContext, mContext.getApplicationContext().getPackageName() + ".provider", f);
-                }else{
-                    uri = Uri.parse("file://" + file.getPath());
+
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    Uri uri;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        File f = new File(file.getPath());
+                        uri = FileProvider.getUriForFile(mContext, mContext.getApplicationContext().getPackageName() + ".provider", f);
+                    } else {
+                        uri = Uri.parse("file://" + file.getPath());
+                    }
+                    intent.setDataAndType(uri, "audio/mp3");
+                    if (Util.detectIntent(mContext, intent)) {
+                        mContext.startActivity(intent);
+                    } else {
+                        ToastUtil.getInstance(mContext).showToast(mContext.getString(R.string.vw_no_audio_play_app));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                intent.setDataAndType(uri, "audio/mp3");
-                if (Util.detectIntent(mContext, intent)) {
-                    mContext.startActivity(intent);
-                } else {
-                    ToastUtil.getInstance(mContext).showToast(mContext.getString(R.string.vw_no_audio_play_app));
-                }
+
+
             }
         });
     }
