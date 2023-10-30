@@ -1,6 +1,8 @@
 package com.vincent.filepicker.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,6 +28,14 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+
+    public static String[] requiredStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            return new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO};
+        } else {
+            return new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+        }
+    }
     private static final int RC_READ_EXTERNAL_STORAGE = 123;
     private static final String TAG = BaseActivity.class.getName();
 
@@ -64,12 +74,12 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
      */
     @AfterPermissionGranted(RC_READ_EXTERNAL_STORAGE)
     private void readExternalStorage() {
-        boolean isGranted = EasyPermissions.hasPermissions(this, "android.permission.READ_EXTERNAL_STORAGE");
+        boolean isGranted = EasyPermissions.hasPermissions(this, requiredStoragePermissions());
         if (isGranted) {
             permissionGranted();
         } else {
             EasyPermissions.requestPermissions(this, getString(R.string.vw_rationale_storage),
-                    RC_READ_EXTERNAL_STORAGE, "android.permission.READ_EXTERNAL_STORAGE");
+                    RC_READ_EXTERNAL_STORAGE, requiredStoragePermissions());
         }
     }
 
@@ -96,7 +106,7 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
 
         if (requestCode == AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE) {
             // Do something after user returned from app settings screen, like showing a Toast.
-            if (EasyPermissions.hasPermissions(this, "android.permission.READ_EXTERNAL_STORAGE")) {
+            if (EasyPermissions.hasPermissions(this, requiredStoragePermissions())) {
                 permissionGranted();
             } else {
                 finish();
